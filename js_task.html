@@ -1,0 +1,162 @@
+  <!DOCTYPE html>
+  <html>
+  <head>
+  	<meta charset="utf-8">
+  	<title>Document</title>
+  	<link rel="stylesheet" href="style.css">
+  	<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  </head>
+  <body>
+  	<div class="top">
+  		<p>Choose your city</p>
+  		<select id="cities"></select>
+  	</div>
+    <div class="wrap">
+     <p class="desc"></p>
+     <a id="link" href="" target="_blank">Yahoo Weather in your city!</a>
+     <div class="main">
+      <div class="temp">
+       <p class="digit"></p>
+     </div>
+   </div>
+   <h1 class="head"></h1>
+   <table id="weather">
+    <tr>
+     <th>Date</th>
+     <th>High/Low</th>
+     <th>Weather</th>
+   </tr>
+   <tr>
+     <td id="date1"></td>
+     <td id="temperature1"></td>
+     <td id="text1"></td>
+   </tr>
+   <tr>
+    <td id="date2"></td>
+    <td id="temperature2"></td>
+    <td id="text2"></td>
+  </tr>
+  <tr>
+    <td id="date3"></td>
+    <td id="temperature3"></td>
+    <td id="text3"></td>
+  </tr>
+  <tr>
+    <td id="date4"></td>
+    <td id="temperature4"></td>
+    <td id="text4"></td>
+  </tr>
+  <tr>
+    <td id="date5"></td>
+    <td id="temperature5"></td>
+    <td id="text5"></td>
+  </tr>
+</table>
+<!-- Start of map -->
+
+<div id="map"></div>
+</div>
+
+<script>
+
+function initMap() {
+ var myLatLng = {lat: 0, lng: 0};
+
+ var map = new google.maps.Map(document.getElementById('map'), {
+  zoom: 7,
+  center: myLatLng
+});
+
+ var marker = new google.maps.Marker({
+  position: myLatLng,
+  map: map,
+  title: 'Hello World!'
+});
+}
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?callback=initMap"
+async defer></script>
+
+<!-- End of map -->
+
+<!-- Start of main script -->
+
+<script type="text/javascript">
+$(function(){
+
+  var apiServer = 'https://query.yahooapis.com/v1/public/yql';
+  var cities = [ 
+  '',
+  'Kharkiv',
+  'Vinnitsa',
+  'Kiev'
+  ];
+  var citiesContainer = $('#cities');
+  var table = $('#weather');
+
+		// render 'select' tag
+		for (var i in cities) {
+			var city = cities[i];
+			citiesContainer.append('<option value="' + i + '">' + city + '</option>');
+		}
+
+		// setup onchange listener
+		citiesContainer.change(function(){
+			var index = $(this).val();
+			var cityName = cities[index];
+			
+			var queryString = 'select * from weather.forecast where woeid in (select woeid from geo.places(1) where text="' + cityName + '") and u="c" ';
+
+      /* AJAX Request */
+
+      $.ajax({
+        url: apiServer,
+        data: {
+         format: 'json',
+         q: queryString,
+       },
+       success: function(data) {	
+         var link = data.query.results.channel.item.link;
+         var lat = data.query.results.channel.item.lat;
+         var long = data.query.results.channel.item.long;
+         var myLatLng = {lat: Number(lat), lng: Number(long)};
+         var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 7,
+          center: myLatLng
+        });
+         var marker = new google.maps.Marker({
+          position: myLatLng,
+          map : map,
+          title: data.query.results.channel.title
+        });
+         $('.wrap').css('visibility', 'visible');
+         $('.digit').html(data.query.results.channel.item.condition.temp + "&#8451" + ' ' + data.query.results.channel.item.condition.text);
+         $("#link").attr("href", link);
+
+         $('#date1').html(data.query.results.channel.item.forecast[1].date);
+         $('#temperature1').html(data.query.results.channel.item.forecast[1].high + ' / ' + data.query.results.channel.item.forecast[1].low + "&#8451");
+         $('#text1').html(data.query.results.channel.item.forecast[1].text);
+         $('#date2').html(data.query.results.channel.item.forecast[2].date);
+         $('#temperature2').html(data.query.results.channel.item.forecast[2].high + ' / ' + data.query.results.channel.item.forecast[2].low + "&#8451");
+         $('#text2').html(data.query.results.channel.item.forecast[2].text);
+         $('#date3').html(data.query.results.channel.item.forecast[3].date);
+         $('#temperature3').html(data.query.results.channel.item.forecast[3].high + ' / ' + data.query.results.channel.item.forecast[3].low + "&#8451");
+         $('#text3').html(data.query.results.channel.item.forecast[3].text);
+         $('#date4').html(data.query.results.channel.item.forecast[4].date);
+         $('#temperature4').html(data.query.results.channel.item.forecast[4].high + ' / ' + data.query.results.channel.item.forecast[4].low + "&#8451");
+         $('#text4').html(data.query.results.channel.item.forecast[4].text);
+         $('#date5').html(data.query.results.channel.item.forecast[5].date);
+         $('#temperature5').html(data.query.results.channel.item.forecast[5].high + ' / ' + data.query.results.channel.item.forecast[5].low + "&#8451");
+         $('#text5').html(data.query.results.channel.item.forecast[5].text);
+         $('.desc').html(data.query.results.channel.description);
+         $(".head").html(data.query.results.channel.title + " for 5 days");
+       }
+     });
+});
+})
+  </script>
+
+  <!-- Start of main script -->
+
+</body>
+</html>
